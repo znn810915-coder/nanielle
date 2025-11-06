@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>无畏契约 · 人格上分测评</title>
+<style>
+/* INS 米白轻柔风（浅色） */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:"PingFang SC","Noto Sans SC","Microsoft YaHei",Arial, sans-serif;
+  background: linear-gradient(180deg,#fbf8f5 0%,#fffdfb 100%);
+  color:#21303a; -webkit-font-smoothing:antialiased;
+  padding:18px;
+}
+.wrap{max-width:980px;margin:12px auto}
+.card{
+  background:linear-gradient(180deg,#ffffff 0%,#fffaf6 100%);
+  border-radius:14px;padding:20px;
+  box-shadow:0 14px 40px rgba(34,45,50,0.06);
+  border:1px solid rgba(255,107,130,0.03);
+}
+
+/* header */
+.header{display:flex;gap:12px;align-items:center;justify-content:space-between}
+.header h1{font-size:24px;font-weight:700}
+.header p{font-size:14px;color:#5a6d7a}
+.progress-bar{
+  width:100%;height:8px;background:#f0f0f0;border-radius:4px;
+  margin-top:12px;overflow:hidden;
+}
+.progress-bar div{
+  height:100%;background:linear-gradient(90deg,#ff6b82 0%,#ff9933 100%);
+  transition:width .3s ease;
+}
+.progress-bar span{font-size:12px;color:#ff6b82;float:right;margin-top:4px}
+
+/* content */
+.q-box{margin-top:30px}
+.q-box .q-num{
+  font-size:12px;color:#ff6b82;margin-bottom:8px;font-weight:700;
+  text-transform:uppercase;
+}
+.q-box .q-text{
+  font-size:18px;font-weight:600;line-height:1.6;margin-bottom:20px;
+}
+.opts-box .opt{
+  background:#f9f9f9;border-radius:10px;padding:14px 20px;
+  margin-bottom:12px;cursor:pointer;
+  transition:all .2s ease;
+  display:flex;align-items:center;gap:12px;
+}
+.opts-box .opt:hover{
+  background:#fff5f7;box-shadow:0 6px 16px rgba(255,107,130,0.1);
+  border:1px solid #ff6b82;transform:translateY(-2px);
+}
+.opts-box .opt span{
+  font-weight:700;color:#ff6b82;width:24px;height:24px;
+  border:1px solid #ff6b82;border-radius:4px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.opts-box .opt p{font-size:16px;color:#21303a;line-height:1.5;margin:0}
+
+/* result */
+#resultCard{display:none;text-align:center;}
+#resultCard .result-img{margin:20px auto;width:120px;height:120px;background:#ff6b82;border-radius:50%;}
+#resultCard h2{font-size:26px;color:#ff6b82;margin-bottom:10px;}
+#resultCard h3{font-size:18px;color:#21303a;margin-bottom:20px;font-weight:500;}
+#resultCard p.intro{font-size:16px;line-height:1.8;text-align:left;color:#5a6d7a;border-left:4px solid #ff6b82;padding-left:15px;margin-bottom:30px;}
+
+.role-recommend{text-align:left;margin-top:20px;}
+.role-recommend h4{font-size:16px;color:#ff6b82;margin-bottom:10px;border-bottom:1px solid #eee;padding-bottom:5px;}
+.role-list{display:flex;flex-wrap:wrap;gap:15px;}
+.role-item{display:flex;align-items:center;gap:10px;background:#fefefe;padding:8px 12px;border-radius:8px;border:1px solid #f0f0f0;cursor:pointer;transition:background .2s;}
+.role-item:hover{background:#fff5f7;border-color:#ff6b82;}
+.role-icon{width:30px;height:30px;border-radius:50%;background:#ff6b82;font-size:14px;color:#fff;display:flex;align-items:center;justify-content:center;}
+.role-info p{font-size:14px;line-height:1.2;margin:0;}
+.role-info p:first-child{font-weight:700;color:#21303a;}
+.role-info p:last-child{font-size:12px;color:#5a6d7a;}
+
+/* modal */
+#rolePreview{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,0.8);z-index:1000;
+  display:none;align-items:center;justify-content:center;
+}
+#rolePreview img{max-width:90vw;max-height:90vh;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,0.5);}
+
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div id="quizCard" class="card">
+    <div class="header">
+      <h1>无畏契约 · 上分人格测评</h1>
+      <p id="qPct">0%</p>
+    </div>
+    <div class="progress-bar"><div id="progress"></div></div>
+
+    <div class="q-box">
+      <div id="qNum" class="q-num">1</div>
+      <div id="qText" class="q-text"></div>
+      <div id="optsBox" class="opts-box"></div>
+    </div>
+  </div>
+
+  <div id="resultCard" class="card">
+    <div class="header" style="justify-content:center;margin-bottom:20px;">
+        <h1>测评结果 · 人格分析</h1>
+    </div>
+    <div id="resultContent">
+      <img id="resultImage" class="result-img" src="" alt="人格类型图标" style="width:120px; height:120px; border-radius:50%; margin:20px auto; display:block;">
+      <h2 id="resultTitle"></h2>
+      <h3 id="resultRole"></h3>
+      <p id="resultIntro" class="intro"></p>
+      
+      <div class="role-recommend">
+        <h4>🎖️ 推荐角色列表（<span id="roleType"></span> 定位）</h4>
+        <div id="recommendedRoles" class="role-list">
+          </div>
+      </div>
+    </div>
+    <button onclick="window.location.reload()" style="background:#ff6b82; color:white; border:none; padding:12px 25px; border-radius:8px; margin-top:30px; cursor:pointer; font-size:16px;">重新测试</button>
+  </div>
+</div>
+
+<div id="rolePreview">
+  <img id="rolePreviewImage" src="" alt="角色详情">
+</div>
+
+<script>
+/* -----------------------------------------------------
+ * 1. 角色数据：已更新为您的 28 位角色及定位
+ * ----------------------------------------------------- */
+const HERO_META = [
+    { name: "贤者", originalName: "Sage", role: "哨位", nickname: "奶妈", initial: "S" },
+    { name: "猎枭", originalName: "Sova", role: "先锋", nickname: "猎枭", initial: "S" },
+    { name: "蝰蛇", originalName: "Viper", role: "控场", nickname: "蝰蛇", initial: "V" },
+    { name: "零", originalName: "Cypher", role: "哨位", nickname: "保安", initial: "C" },
+    { name: "芮娜", originalName: "Reyna", role: "决斗", nickname: "芮娜", initial: "R" },
+    { name: "奇乐", originalName: "Killjoy", role: "哨位", nickname: "奇乐", initial: "K" },
+    { name: "斯凯", originalName: "Skye", role: "先锋", nickname: "斯凯", initial: "S" },
+    { name: "夜路", originalName: "Yoru", role: "决斗", nickname: "夜路", initial: "Y" },
+    { name: "星碓", originalName: "Astra", role: "控场", nickname: "星碓", initial: "A" },
+    { name: "K/O", originalName: "KAY/O", role: "先锋", nickname: "K/O", initial: "K" },
+    { name: "尚勃勒", originalName: "Chamber", role: "哨位", nickname: "尚勃勒", initial: "C" },
+    { name: "霓虹", originalName: "Neon", role: "决斗", nickname: "霓虹", initial: "N" },
+    { name: "黑梦", originalName: "Fade", role: "先锋", nickname: "黑梦", initial: "F" },
+    { name: "海神", originalName: "Harbor", role: "控场", nickname: "海神", initial: "H" },
+    { name: "盖可", originalName: "Gekko", role: "先锋", nickname: "盖子", initial: "G" },
+    { name: "钢索", originalName: "Cypher", role: "哨位", nickname: "钢索", initial: "G" }, 
+    { name: "壹决", originalName: "Jett", role: "决斗", nickname: "壹决", initial: "J" },
+    { name: "暮蝶", originalName: "Omen", role: "控场", nickname: "暮蝶", initial: "O" },
+    { name: "维斯", originalName: "Cypher", role: "哨位", nickname: "维斯", initial: "V" }, 
+    { name: "钛狐", originalName: "Breach", role: "先锋", nickname: "钛狐", initial: "B" },
+    { name: "幻棱", originalName: "Phoenix", role: "决斗", nickname: "幻棱", initial: "P" },
+    { name: "禁灭", originalName: "Viper", role: "哨位", nickname: "禁灭", initial: "J" }, 
+    { name: "铁壁", originalName: "Sova", role: "先锋", nickname: "铁壁", initial: "T" },
+    { name: "捷风", originalName: "Jett", role: "决斗", nickname: "捷风", initial: "J" }, 
+    { name: "雷兹", originalName: "Raze", role: "决斗", nickname: "炸弹妹儿", initial: "R" },
+    { name: "幽影", originalName: "Omen", role: "控场", nickname: "幽影", initial: "Y" }, 
+    { name: "炼狱", originalName: "Brimstone", role: "控场", nickname: "烟男", initial: "L" },
+    { name: "不死鸟", originalName: "Phoenix", role: "决斗", nickname: "火男", initial: "B" } 
+];
+
+/* -----------------------------------------------------
+ * 2. 题库：已更新为您的 40 道新题
+ * ----------------------------------------------------- */
+const QUESTIONS = [
+  "1. 开局我更愿意做：A.冲锋试探 B.慢速收集信息 C.和队友沟通 D.守位等待信息 E.放置控点",
+  "2. 我在队里更想担当：A.先手开团 B.战术分配者 C.支援/救援者 D.情报/观察者 E.地图控制者",
+  "3. 被敌方挑衅时我会：A.马上反击 B.用策略反制 C.请求队友支援 D.保持冷静观望 E.诱敌进入埋伏点",
+  "4. 当队友失误让我掉分，我通常：A.抢过来亲自完成 B.重新组织战术 C.补位救场 D.保持情绪稳定 E.用陷阱拖延对方",
+  "5. 对你最重要的是：A.个人表现 B.回合胜利 C.团队节奏 D.长期稳定 E.地图掌控",
+  "6. 你更享受哪种击杀：A.瞬间冲锋取胜 B.烟雾+套路收割 C.团队配合击杀 D.假动作诱敌 E.卡位精准狙杀",
+  "7. 在对局信息不足时你会：A.赌一把冲过去 B.布置技能试探 C.叫队友支援 D.观察并等待 E.布下陷阱拿位置",
+  "8. 你如何处理劣势回合：A.继续试图击杀翻盘 B.保存经济 C.做延迟拖时间 D.冷静复盘下一回合 E.设局等对方犯错",
+  "9. 你更看中哪项数据：A.击杀数 B.赢局数 C.助攻/支援 D.生存率 E.策略执行率",
+  "10. 你在进攻方时偏好：A.第一进入点 B.拆开路线逐一推进 C.协同推进 D.等敌方露头再动 E.集中资源控图",
+  "11. 你遇到队友乱冲会：A.直接跟上拼 B.叫停并布阵 C.补位救场 D.让他去，自己按计划走 E.用技能封堵通道",
+  "12. 你认为取胜关键是：A.个人果断 B.团队配合 C.信息优势 D.心理克制 E.控图运筹",
+  "13. 你在被压点时喜欢：A.硬冲突破 B.技能配合 C.呼叫队友救援 D.选择冷静防守 E.拉扯制造假象",
+  "14. 当有人抢你的位子你会：A.抢回 B.重新部署 C.让位并调整 D.维持心态 E.设置报复陷阱",
+  "15. 你更倾向于：A.挑明目标 B.暗中规划 C.帮助队友完成目标 D.用证据说服队友 E.压缩敌方行动空间",
+  "16. 你在残局中更常做：A.进攻收割 B.结盟防守 C.协作控制点 D.谨慎观测 E.卡位狙击",
+  "17. 你账号的操作风格是：A.冲动型 B.计划型 C.协同性 D.稳健性 E.控制性",
+  "18. 你更愿意练哪类技能：A.位移+peek B.烟线+战术 C.辅助技能 D.信息读图 E.陷阱布局与计时",
+  "19. 你被喷后会：A.回喷并冲锋 B.用数据反驳 C.沉默并专注游戏 D.忽略并冷静 E.计划性地惩罚对方",
+  "20. 你更擅长的操作是：A.快切/闪现 B.烟雾组合 C.团队支援 D.预判狙击 E.布置系统/陷阱",
+  "21. 你在队伍中通常是：A.先手者 B.策划者 C.支援者 D.观察者 E.控场者",
+  "22. 当对面使用大量信息技能时你会：A.强行突破 B.用策略反制 C.召集队友 D.保持冷静观察 E.调整控图参数",
+  "23. 你更愿意把点位交给谁：A.自己冲 B.战术玩家 C.队友辅助 D.稳点玩家 E.情报手",
+  "24. 对于“赌一把”机会你通常：A.毫不犹豫 B.权衡后尝试 C.不建议 D.只在保证信息下尝试 E.做诱敌策略",
+  "25. 你对队友指令的反应：A.喜欢直接执行 B.喜欢讨论后执行 C.只执行我擅长的 D.按计划执行 E.执行我认为合适的",
+  "26. 你更常在比赛中：A.创造机会 B.把控大局 C.提供支援 D.稳守胜率 E.布局陷阱",
+  "27. 当经济吃紧时你优先：A.争点位 B.保技能 C.队友分配 D.稳守下回合 E.策略性保枪",
+  "28. 你更在意哪些损失：A.击杀数 B.回合丢失 C.队伍配合 D.情绪波动 E.地图控制点丢失",
+  "29. 你觉得高段位靠什么：A.操作 B.决策 C.团队 D.心理 E.策略",
+  "30. 你常用的赢球方法是：A.强攻 B.套路 C.支援 D.稳打 E.控图",
+  "31. 你在紧张时更可能：A.冲动 B.犹豫 C.求支援 D.冷静 E.退一手布局",
+  "32. 你能不能接受牺牲自己换队友：A.经常 B.有条件 C.偶尔 D.很少 E.只在必要时",
+  "33. 遇到未知对手套路你会：A.直接试探 B.用魔性战术反制 C.与队友一起研究 D.观察习惯后出手 E.设局验证",
+  "34. 你更喜欢哪种对局节奏：A.快 B.中等 C.按情况 D.慢 E.可控切换",
+  "35. 你更愿意被队友评价为：A.敢冲 B.聪明 C.可靠 D.冷静 E.稳定",
+  "36. 你认为团队最怕的是什么：A.被突袭 B.被策反 C.失去支援 D.被心理瓦解 E.被地图控制",
+  "37. 你在压枪/控制后坐力方面是：A.自信 B.需要练习 C.中等 D.稳健 E.专攻压制",
+  "38. 你是否愿意在训练中专注一到两个英雄：A.愿意 B.更愿意训练体系 C.愿意切合队伍 D.愿意练信息英雄 E.愿意练控场者",
+  "39. 你在对线中最常用的手段：A.直接拍刀 B.技能配合 C.资源分配 D.诱敌 E.布设机关",
+  "40. 你一场比赛结束最想看到的信息是：A.击杀数 B.赢下局数 C.队友协作数据 D.自己表现稳定性 E.控图成功率"
+];
+
+
+/* -----------------------------------------------------
+ * 3. 评分映射：已更新为深度优化版本（权重 1-3，更符合现实游戏化）
+ * ----------------------------------------------------- */
+const RESULTS_MAPPING = [
+  /* 1. 开局我更愿意做：A.冲锋试探 B.慢速收集信息 C.和队友沟通 D.守位等待信息 E.放置控点 */
+  { A: { '决斗': 3, '先锋': 1 }, B: { '先锋': 2, '控场': 1 }, C: { '先锋': 3, '控场': 1 }, D: { '哨位': 3 }, E: { '控场': 2, '哨位': 1 } },
+  /* 2. 我在队里更想担当：A.先手开团 B.战术分配者 C.支援/救援者 D.情报/观察者 E.地图控制者 */
+  { A: { '决斗': 3, '先锋': 1 }, B: { '控场': 3, '先锋': 1 }, C: { '先锋': 2, '哨位': 1 }, D: { '先锋': 3 }, E: { '控场': 3 } },
+  /* 3. 被敌方挑衅时我会：A.马上反击 B.用策略反制 C.请求队友支援 D.保持冷静观望 E.诱敌进入埋伏点 */
+  { A: { '决斗': 3, '先锋': 1 }, B: { '控场': 3 }, C: { '先锋': 3 }, D: { '哨位': 2, '控场': 1 }, E: { '哨位': 3 } },
+  /* 4. 当队友失误让我掉分，我通常：A.抢过来亲自完成 B.重新组织战术 C.补位救场 D.保持情绪稳定 E.用陷阱拖延对方 */
+  { A: { '决斗': 3 }, B: { '控场': 3, '先锋': 1 }, C: { '先锋': 3, '哨位': 1 }, D: { '哨位': 2, '控场': 1 }, E: { '哨位': 3 } },
+  /* 5. 对你最重要的是：A.个人表现 B.回合胜利 C.团队节奏 D.长期稳定 E.地图掌控 */
+  { A: { '决斗': 3 }, B: { '控场': 2, '先锋': 1 }, C: { '先锋': 3, '决斗': 1 }, D: { '哨位': 3 }, E: { '控场': 3 } },
+  /* 6. 你更享受哪种击杀：A.瞬间冲锋取胜 B.烟雾+套路收割 C.团队配合击杀 D.假动作诱敌 E.卡位精准狙杀 */
+  { A: { '决斗': 3 }, B: { '控场': 3 }, C: { '先锋': 3 }, D: { '决斗': 1, '控场': 1 }, E: { '哨位': 3 } },
+  /* 7. 在对局信息不足时你会：A.赌一把冲过去 B.布置技能试探 C.叫队友支援 D.观察并等待 E.布下陷阱拿位置 */
+  { A: { '决斗': 3 }, B: { '先锋': 3, '控场': 1 }, C: { '先锋': 2, '哨位': 1 }, D: { '哨位': 2 }, E: { '哨位': 3 } },
+  /* 8. 你如何处理劣势回合：A.继续试图击杀翻盘 B.保存经济 C.做延迟拖时间 D.冷静复盘下一回合 E.设局等对方犯错 */
+  { A: { '决斗': 3 }, B: { '控场': 1, '哨位': 1 }, C: { '控场': 3, '哨位': 1 }, D: { '哨位': 3, '控场': 1 }, E: { '控场': 2, '哨位': 1 } },
+  /* 9. 你更看中哪项数据：A.击杀数 B.赢局数 C.助攻/支援 D.生存率 E.策略执行率 */
+  { A: { '决斗': 3 }, B: { '控场': 1, '先锋': 1 }, C: { '先锋': 3 }, D: { '哨位': 3 }, E: { '控场': 3 } },
+  /* 10. 你在进攻方时偏好：A.第一进入点 B.拆开路线逐一推进 C.协同推进 D.等敌方露头再动 E.集中资源控图 */
+  { A: { '决斗': 3 }, B: { '控场': 2, '先锋': 1 }, C: { '先锋': 3 }, D: { '哨位': 2 }, E: { '控场': 3 } },
+  /* 11. 你遇到队友乱冲会：A.直接跟上拼 B.叫停并布阵 C.补位救场 D.让他去，自己按计划走 E.用技能封堵通道 */
+  { A: { '决斗': 3 }, B: { '控场': 3, '先锋': 1 }, C: { '先锋': 3 }, D: { '哨位': 3 }, E: { '控场': 2, '哨位': 1 } },
+  /* 12. 你认为取胜关键是：A.个人果断 B.团队配合 C.信息优势 D.心理克制 E.控图运筹 */
+  { A: { '决斗': 3 }, B: { '先锋': 2, '控场': 1 }, C: { '先锋': 3, '控场': 1 }, D: { '哨位': 3 }, E: { '控场': 3 } },
+  /* 13. 你在被压点时喜欢：A.硬冲突破 B.技能配合 C.呼叫队友救援 D.选择冷静防守 E.拉扯制造假象 */
+  { A: { '决斗': 3 }, B: { '控场': 3, '先锋': 1 }, C: { '先锋': 3 }, D: { '哨位': 3 }, E: { '控场': 2, '哨位': 1 } },
+  /* 14. 当有人抢你的位子你会：A.抢回 B.重新部署 C.让位并调整 D.维持心态 E.设置报复陷阱 */
+  { A: { '决斗': 3 }, B: { '控场': 3 }, C: { '先锋': 2, '哨位': 1 }, D: { '哨位': 3 }, E: { '哨位': 3 } },
+  /* 15. 你更倾向于：A.挑明目标 B.暗中规划 C.帮助队友完成目标 D.用证据说服队友 E.压缩敌方行动空间 */
+  { A: { '决斗': 3 }, B: { '控场': 3 }, C: { '先锋': 3 }, D: { '先锋': 2, '控场': 1 }, E: { '控场': 3 } },
+  /* 16. 你在残局中更常做：A.进攻收割 B.结盟防守 C.协作控制点 D.谨慎观测 E.卡位狙击 */
+  { A: { '决斗': 3 }, B: { '哨位': 3 }, C: { '先锋': 2, '控场': 1 }, D: { '哨位': 3 }, E: { '哨位': 3 } },
+  /* 17. 你账号的操作风格是：A.冲动型 B.计划型 C.协同性 D.稳健性 E.控制性 */
+  { A: { '决斗': 3 }, B: { '控场': 3 }, C: { '先锋': 3 }, D: { '哨位': 3 }, E: { '控场': 3 } },
+  /* 18. 你更愿意练哪类技能：A.位移+peek B.烟线+战术 C.辅助技能 D.信息读图 E.陷阱布局与计时 */
+  { A: { '决斗': 3 }, B: { '控场': 3 }, C: { '先锋': 3 }, D: { '先锋': 2, '哨位': 1 }, E: { '控场': 1, '哨位': 2 } },
+  /* 19. 你被喷后会：A.回喷并冲锋 B.用数据反驳 C.沉默并专注游戏 D.忽略并冷静 E.计划性地惩罚对方 */
+  { A: { '决斗': 3 }, B: { '控场': 2, '先锋': 1 }, C: { '先锋': 3 }, D: { '哨位': 3 }, E: { '控场': 3 } },
+  /* 20. 你更擅长的操作是：A.快切/闪现 B.烟雾组合 C.团队支援 D.预判狙击 E.布置系统/陷阱 */
+  { A: { '决斗': 3 }, B: { '控场': 3 }, C: { '先锋': 3 }, D: { '哨位': 3 }, E: { '哨位': 3 } },
+  /* 21. 你在队伍中通常是：A.先手者 B.策划者 C.支援者 D.观察者 E.控场者 */
+  { A: { '决斗': 3 }, B: { '控场': 3 }, C: { '先锋': 3 }, D: { '先锋': 1, '哨位': 2 }, E: { '控场': 3 } },
+  /* 22. 当对面使用大量信息技能时你会：A.强行突破 B.用策略反制 C.召集队友 D.保持冷静观察 E.调整控图参数 */
+  { A: { '决斗': 3 }, B: { '控场': 3 }, C: { '先锋': 3 }, D: { '哨位': 3 }, E: { '控场': 3 } },
+  /* 23. 你更愿意把点位交给谁：A.自己冲 B.战术玩家 C.队友辅助 D.稳点玩家 E.情报手 */
+  { A: { '决斗': 3 }, B: { '控场': 3 }, C: { '先锋': 3 }, D: { '哨位': 3 }, E: { '先锋': 3 } },
+  /* 24. 对于“赌一把”机会你通常：A.毫不犹豫 B.权衡后尝试 C.不建议 D.只在保证信息下尝试 E.做诱敌策略 */
+  { A: { '决斗': 3 }, B: { '控场': 3 }, C: { '哨位': 2 }, D: { '先锋': 3 }, E: { '控场': 3 } },
+  /* 25. 你对队友指令的反应：A.喜欢直接执行 B.喜欢讨论后执行 C.只执行我擅长的 D.按计划执行 E.执行我认为合适的 */
+  { A: { '决斗': 3 }, B: { '控场': 3 }, C: { '先锋': 3 }, D: { '哨位': 3 }, E: { '控场': 3 } },
+  /* 26. 你更常在比赛中：A.创造机会 B.把控大局 C.提供支援 D.稳守胜率 E.布局陷阱 */
+  { A: { '决斗': 3 }, B: { '控场': 3 }, C: { '先锋': 3 }, D: { '哨位': 3 }, E: { '哨位': 3 } },
+  /* 27. 当经济吃紧时你优先：A.争点位 B.保技能 C.队友分配 D.稳守下回合 E.策略性保枪 */
+  { A: { '决斗': 3 }, B: { '控场': 3 }, C: { '先锋': 3 }, D: { '哨位': 3 }, E: { '控场': 3 } },
+  /* 28. 你更在意哪些损失：A.击杀数 B.回合丢失 C.队伍配合 D.情绪波动 E.地图控制点丢失 */
+  { A: { '决斗': 3 }, B: { '控场': 2, '先锋': 1 }, C: { '先锋': 3 }, D: { '哨位': 3 }, E: { '控场': 3 } },
+  /* 29. 你觉得高段位靠什么：A.操作 B.决策 C.团队 D.心理 E.策略 */
+  { A: { '决斗': 3 }, B: { '控场': 3 }, C: { '先锋': 3 }, D: { '哨位': 3 }, E: { '控场': 3 } },
+  /* 30. 你常用的赢球方法是：A.强攻 B.套路 C.支援 D.稳打 E.控图 */
+  { A: { '决斗': 3 }, B: { '控场': 3 }, C: { '先锋': 3 }, D: { '哨位': 3 }, E: { '控场': 3 } },
+  /* 31. 你在紧张时更可能：A.冲动 B.犹豫 C.求支援 D.冷静 E.退一手布局 */
+  { A: { '决斗': 3 }, B: { '控场': 1, '哨位': 1 }, C: { '先锋': 3 }, D: { '哨位': 3 }, E: { '控场': 3 } },
+  /* 32. 你能不能接受牺牲自己换队友：A.经常 B.有条件 C.偶尔 D.很少 E.只在必要时 */
+  { A: { '决斗': 1, '先锋': 2 }, B: { '控场': 3, '先锋': 1 }, C: { '先锋': 3 }, D: { '哨位': 3 }, E: { '控场': 3 } },
+  /* 33. 遇到未知对手套路你会：A.直接试探 B.用魔性战术反制 C.与队友一起研究 D.观察习惯后出手 E.设局验证 */
+  { A: { '决斗': 3 }, B: { '控场': 3 }, C: { '先锋': 3 }, D: { '哨位': 3 }, E: { '哨位': 3 } },
+  /* 34. 你更喜欢哪种对局节奏：A.快 B.中等 C.按情况 D.慢 E.可控切换 */
+  { A: { '决斗': 3 }, B: { '控场': 2, '先锋': 1 }, C: { '控场': 1, '先锋': 2 }, D: { '哨位': 3 }, E: { '控场': 3 } },
+  /* 35. 你更愿意被队友评价为：A.敢冲 B.聪明 C.可靠 D.冷静 E.稳定 */
+  { A: { '决斗': 3 }, B: { '控场': 3 }, C: { '先锋': 3 }, D: { '哨位': 3 }, E: { '控场': 1, '哨位': 2 } },
+  /* 36. 你认为团队最怕的是什么：A.被突袭 B.被策反 C.失去支援 D.被心理瓦解 E.被地图控制 */
+  { A: { '决斗': 3 }, B: { '控场': 3 }, C: { '先锋': 3 }, D: { '哨位': 3 }, E: { '控场': 3 } },
+  /* 37. 你在压枪/控制后坐力方面是：A.自信 B.需要练习 C.中等 D.稳健 E.专攻压制 */
+  { A: { '决斗': 3 }, B: { '控场': 1, '哨位': 1 }, C: { '先锋': 3 }, D: { '哨位': 3 }, E: { '控场': 3 } },
+  /* 38. 你是否愿意在训练中专注一到两个英雄：A.愿意 B.更愿意训练体系 C.愿意切合队伍 D.愿意练信息英雄 E.愿意练控场者 */
+  { A: { '决斗': 3 }, B: { '控场': 3 }, C: { '先锋': 3 }, D: { '先锋': 2, '哨位': 1 }, E: { '控场': 3 } },
+  /* 39. 你在对线中最常用的手段：A.直接拍刀 B.技能配合 C.资源分配 D.诱敌 E.布设机关 */
+  { A: { '决斗': 3 }, B: { '控场': 3 }, C: { '先锋': 3 }, D: { '哨位': 3 }, E: { '哨位': 3 } },
+  /* 40. 你一场比赛结束最想看到的信息是：A.击杀数 B.赢下局数 C.队友协作数据 D.自己表现稳定性 E.控图成功率 */
+  { A: { '决斗': 3 }, B: { '控场': 2, '先锋': 1 }, C: { '先锋': 3 }, D: { '哨位': 3 }, E: { '控场': 3 } }
+];
+
+/* -----------------------------------------------------
+ * 4. 结果池：已更新为详细描述版本
+ * ----------------------------------------------------- */
+const RESULT_POOL = {
+  '决斗': {
+    title: '战地尖刀型 · 狂热突破者',
+    role: '决斗者 (DUELIST)',
+    intro: '你的风格激进、果断且充满自信。你倾向于依靠个人操作和爆发力为队伍打开局面，将击杀数和个人表现视为最重要的荣耀。你追求刺激和快速的对局节奏，是队伍中不可或缺的尖刀。你的目标是：开团，击杀，主宰战场。',
+    color: '#ff6b82'
+  },
+  '控场': {
+    title: '运筹帷幄型 · 战术大师',
+    role: '控场者 (CONTROLLER)',
+    intro: '你是一个天生的规划者和布局者。你擅长通过烟雾、墙体和地图控制技能来分割战场、掌控节奏。你注重回合的胜利和策略的执行，冷静的头脑让你总能在混乱中找到最优解。你的目标是：限制视野，划分区域，掌控大局。',
+    color: '#00c7b7'
+  },
+  '先锋': {
+    title: '信息先遣型 · 团队核心',
+    role: '先锋 (INITIATOR)',
+    intro: '你充满团队精神，乐于为队友创造机会和提供关键信息。你的技能组合倾向于辅助队友突破、打乱敌方防线。在队伍中，你更像一个指挥者和支援者，依靠大局观和高效的沟通赢得比赛。你的目标是：获取情报，清除威胁，协同推进。',
+    color: '#ff9933'
+  },
+  '哨位': {
+    title: '稳健防守型 · 安全卫士',
+    role: '哨位 (SENTINEL)',
+    intro: '你性格沉稳、心态稳定，是队伍防线的最后保障。你擅长利用陷阱、延迟和防守技能来固守点位或看守侧翼。在残局中，你总能保持冷静，通过卡位和谨慎的观测为队伍争取最大利益。你的目标是：侧翼安全，延迟进攻，坚守点位。',
+    color: '#4e5482'
+  }
+};
+
+
+/* -----------------------------------------------------
+ * 5. 核心逻辑与渲染
+ * ----------------------------------------------------- */
+let current = 0;
+let answers = {};
+let scores = { '决斗': 0, '先锋': 0, '控场': 0, '哨位': 0 };
+
+const qNum = document.getElementById('qNum');
+const qPct = document.getElementById('qPct');
+const progress = document.getElementById('progress');
+const qText = document.getElementById('qText');
+const optsBox = document.getElementById('optsBox');
+const quizCard = document.getElementById('quizCard');
+const resultCard = document.getElementById('resultCard');
+
+function parseQuestion(qstr) {
+  const parts = qstr.split("：");
+  const stem = parts[0].replace(/^\d+\.\s*/, '');
+  const opts = parts[1].trim().split(" ").map(opt => {
+    const match = opt.match(/([A-E])\.(.*)/);
+    return { label: match[1], text: match[2] };
+  });
+  return { stem, opts };
+}
+
+function handleAnswer(label) {
+  // 1. 记录答案
+  answers[current] = label;
+  
+  // 2. 累加分数
+  const scoring = RESULTS_MAPPING[current][label];
+  for (const role in scoring) {
+    scores[role] += scoring[role];
+  }
+
+  // 3. 渲染下一题或结果
+  if (current < QUESTIONS.length - 1) {
+    renderQuestion(current + 1);
+  } else {
+    showResult();
+  }
+}
+
+function renderQuestion(i){
+  current = i;
+  const qstr = QUESTIONS[i];
+  const parsed = parseQuestion(qstr);
+  // 还原为 Q1/40 的显示格式
+  qNum.innerText = `Q${i+1}/${QUESTIONS.length}`; 
+  qPct.innerText = Math.round(((i)/QUESTIONS.length)*100) + '%';
+  progress.style.width = ((i)/QUESTIONS.length*100) + '%';
+  qText.innerText = parsed.stem;
+  optsBox.innerHTML = '';
+  
+  parsed.opts.forEach((opt, idx)=>{
+    const div = document.createElement('div');
+    div.className='opt';
+    div.onclick = () => handleAnswer(opt.label);
+    div.innerHTML = `<span>${opt.label}</span><p>${opt.text}</p>`;
+    optsBox.appendChild(div);
+  });
+}
+
+function showResult() {
+  quizCard.style.display = 'none';
+  resultCard.style.display = 'block';
+
+  // 1. 找出得分最高的角色定位
+  let maxScore = -1;
+  let topRole = '';
+  for (const role in scores) {
+    if (scores[role] > maxScore) {
+      maxScore = scores[role];
+      topRole = role;
+    }
+  }
+
+  const resultData = RESULT_POOL[topRole];
+
+  // 2. 渲染结果内容
+  document.getElementById('resultTitle').innerText = resultData.title;
+  document.getElementById('resultRole').innerText = `【${resultData.role} 人格】`;
+  document.getElementById('resultIntro').innerText = resultData.intro;
+  document.getElementById('roleType').innerText = topRole;
+  document.getElementById('resultImage').style.background = resultData.color;
+
+  // 3. 筛选并渲染推荐角色
+  const recommendedRolesBox = document.getElementById('recommendedRoles');
+  recommendedRolesBox.innerHTML = '';
+  const recommendedList = HERO_META.filter(hero => hero.role === topRole);
+
+  recommendedList.forEach(hero => {
+    const item = document.createElement('div');
+    item.className = 'role-item';
+    item.onclick = () => showRolePreview(hero.nickname, hero.color || resultData.color);
+    item.innerHTML = `
+      <div class="role-icon" style="background:${resultData.color};">${hero.initial}</div>
+      <div class="role-info">
+        <p>${hero.nickname} · ${hero.originalName}</p>
+        <p>${hero.role}</p>
+      </div>
+    `;
+    recommendedRolesBox.appendChild(item);
+  });
+
+  // 4. 更新进度条到 100%
+  qPct.innerText = '100%';
+  progress.style.width = '100%';
+}
+
+function showRolePreview(name, color) {
+  const modal = document.getElementById('rolePreview');
+  const img = document.getElementById('rolePreviewImage');
+  // 动态生成 SVG 图片，显示昵称
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="700" height="700" viewBox="0 0 700 700">
+    <rect x="0" y="0" width="700" height="700" rx="40" fill="${color}" opacity="1"/>
+    <rect x="30" y="30" width="640" height="640" rx="32" fill="#fff"/>
+    <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-size="72" font-family="PingFang SC, Microsoft YaHei, Arial" fill="${color}">${name}</text>
+  </svg>`;
+  const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  img.src = url;
+  modal.style.display = 'flex';
+}
+
+document.getElementById('rolePreview').addEventListener('click', ()=> {
+  document.getElementById('rolePreview').style.display = 'none';
+});
+
+/* Render first question initially */
+renderQuestion(0);
+</script>
+</body>
+</html>
